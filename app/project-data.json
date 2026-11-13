@@ -1,0 +1,25 @@
+{
+  "projects": [
+    {
+      "name": "Illustrative Project Atlas",
+      "owner": "Example owner — placeholder",
+      "status": "On track (illustrative)",
+      "recentActivity": "Placeholder: planning notes updated this week.",
+      "priority": "Medium (illustrative)"
+    },
+    {
+      "name": "Illustrative Project Beacon",
+      "owner": "Example owner — placeholder",
+      "status": "In progress (illustrative)",
+      "recentActivity": "Placeholder: a design review is scheduled.",
+      "priority": "High (illustrative)"
+    },
+    {
+      "name": "Illustrative Project Cedar",
+      "owner": "Example owner — placeholder",
+      "status": "Needs attention (illustrative)",
+      "recentActivity": "Placeholder: awaiting an update from stakeholders.",
+      "priority": "Low (illustrative)"
+    }
+  ]
+}

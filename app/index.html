@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A quick view of project ownership, status, activity, and priority.">
+    <title>Project Pulse</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="dashboard">
+      <header class="dashboard__header">
+        <p class="dashboard__eyebrow">Team overview</p>
+        <h1 class="dashboard__title">Project Pulse</h1>
+        <p class="dashboard__intro">A quick view of project ownership, status, recent activity, and priority.</p>
+      </header>
+
+      <p class="dashboard__message" id="dashboard-message" role="status" aria-live="polite">
+        Loading projects…
+      </p>
+      <section class="project-grid" id="project-grid" aria-label="Projects" hidden></section>
+    </main>
+
+    <script>
+      const message = document.querySelector("#dashboard-message");
+      const projectGrid = document.querySelector("#project-grid");
+
+      function addDetail(card, className, label, value) {
+        const detail = document.createElement("p");
+        detail.className = className;
+
+        const term = document.createElement("strong");
+        term.textContent = `${label}: `;
+        detail.append(term, document.createTextNode(value));
+        card.append(detail);
+      }
+
+      function renderProjects(projects) {
+        projectGrid.replaceChildren();
+
+        for (const project of projects) {
+          const card = document.createElement("article");
+          card.className = "project-card";
+
+          const title = document.createElement("h2");
+          title.className = "project-card__title";
+          title.textContent = project.name;
+          card.append(title);
+
+          addDetail(card, "project-card__owner", "Owner", project.owner);
+          addDetail(card, "project-card__status", "Status", project.status);
+          addDetail(card, "project-card__activity", "Recent activity", project.recentActivity);
+          addDetail(card, "project-card__priority", "Priority", project.priority);
+          projectGrid.append(card);
+        }
+
+        projectGrid.hidden = false;
+        message.hidden = true;
+      }
+
+      async function loadProjects() {
+        let response;
+        try {
+          response = await fetch("project-data.json");
+        } catch {
+          message.textContent = "Projects could not be loaded because the network request failed. Check your connection and try again.";
+          message.setAttribute("role", "alert");
+          return;
+        }
+
+        if (!response.ok) {
+          message.textContent = `Projects could not be loaded: the server returned HTTP ${response.status}.`;
+          message.setAttribute("role", "alert");
+          return;
+        }
+
+        let data;
+        try {
+          data = await response.json();
+        } catch {
+          message.textContent = "Projects could not be loaded because the server response was not valid JSON.";
+          message.setAttribute("role", "alert");
+          return;
+        }
+
+        if (!data || typeof data !== "object" || !Array.isArray(data.projects)) {
+          message.textContent = "Projects could not be loaded because the data must be an object containing a projects array.";
+          message.setAttribute("role", "alert");
+          return;
+        }
+
+        const requiredFields = ["name", "owner", "status", "recentActivity", "priority"];
+        for (const [index, project] of data.projects.entries()) {
+          if (!project || typeof project !== "object" || Array.isArray(project)) {
+            message.textContent = `Projects could not be loaded because project ${index + 1} is not a valid project record.`;
+            message.setAttribute("role", "alert");
+            return;
+          }
+
+          const invalidFields = requiredFields.filter((field) => typeof project[field] !== "string");
+          if (invalidFields.length > 0) {
+            message.textContent = `Projects could not be loaded because project ${index + 1} is missing string value${invalidFields.length > 1 ? "s" : ""} for: ${invalidFields.join(", ")}.`;
+            message.setAttribute("role", "alert");
+            return;
+          }
+        }
+
+        if (data.projects.length === 0) {
+          message.textContent = "No projects to display yet.";
+          return;
+        }
+
+        renderProjects(data.projects);
+      }
+
+      loadProjects();
+    </script>
+  </body>
+</html>
